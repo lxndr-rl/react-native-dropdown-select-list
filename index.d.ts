@@ -125,6 +125,11 @@ export interface MultipleSelectListProps {
   placeholder?: string;
 
   /**
+   * Default selected Items
+   */
+  selectedItems: Array<{}>;
+
+  /**
    * Additional styles for select box
    */
   boxStyles?: ViewStyle;
