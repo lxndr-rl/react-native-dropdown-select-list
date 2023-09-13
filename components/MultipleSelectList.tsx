@@ -10,7 +10,6 @@ import {
   TextInput,
   ViewStyle,
   Pressable,
-  TouchableWithoutFeedback,
 } from "react-native";
 
 import { MultipleSelectListProps } from "..";
@@ -28,7 +27,6 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
   dropdownTextStyles,
   maxHeight,
   data,
-  selectedData = [],
   searchicon = false,
   arrowicon = false,
   closeicon = false,
@@ -46,17 +44,21 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
   checkBoxStyles,
   save = "key",
   dropdownShown = false,
+  selectedLabel = "Selected",
+  showSelected = true,
+  defaultOption = [],
 }) => {
   const oldOption = React.useRef(null);
   const [_firstRender, _setFirstRender] = React.useState<boolean>(true);
   const [dropdown, setDropdown] = React.useState<boolean>(dropdownShown);
-  const [selectedval, setSelectedVal] = React.useState<any>(selectedData);
+  const [selectedval, setSelectedVal] = React.useState<any>([]);
   const [height, setHeight] = React.useState<number>(350);
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const [filtereddata, setFilteredData] = React.useState(data);
 
   const slidedown = () => {
     setDropdown(true);
+
     Animated.timing(animatedvalue, {
       toValue: height,
       duration: 500,
@@ -94,6 +96,31 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
     }
   }, [dropdownShown]);
 
+  React.useEffect(() => {
+    if (defaultOption.length > 0 && _firstRender) {
+      defaultOption.forEach((item: any) => {
+        let key = item.key ?? item.value ?? item;
+        let value = item.value ?? item;
+
+        if (save === "value") {
+          setSelected((val: any) => {
+            let temp = [...new Set([...val, value])];
+            return temp;
+          });
+        } else {
+          setSelected((val: any) => {
+            let temp = [...new Set([...val, key])];
+            return temp;
+          });
+        }
+        setSelectedVal((val: any) => {
+          let temp = [...new Set([...val, value])];
+          return temp;
+        });
+      });
+    }
+  }, [defaultOption]);
+
   return (
     <View>
       {dropdown && search ? (
@@ -110,8 +137,6 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
             )}
 
             <TextInput
-              focusable={true}
-              autoFocus={true}
               placeholder={searchPlaceholder}
               onChangeText={(val) => {
                 let result = data.filter((item: L1Keys) => {
@@ -146,7 +171,7 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
         </View>
       ) : selectedval?.length > 0 ? (
         <TouchableOpacity
-          style={[styles.wrapperSelected, boxStyles]}
+          style={[styles.wrapper, boxStyles]}
           onPress={() => {
             if (!dropdown) {
               slidedown();
@@ -156,30 +181,35 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
           }}
         >
           <View>
-            {/* <Text style={[{ fontWeight: '600', fontFamily }, labelStyles]}>{label}</Text> */}
-            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+            <Text style={[{ fontWeight: "600", fontFamily }, labelStyles]}>
+              {label}
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                marginBottom: 8,
+                flexWrap: "wrap",
+              }}
+            >
               {selectedval?.map((item, index) => {
                 return (
                   <View
                     key={index}
                     style={[
                       {
-                        backgroundColor: "white",
-                        borderWidth: 1,
-                        borderRadius: 10,
-                        borderColor: "#e7e7e7",
-                        paddingHorizontal: 5,
-                        paddingVertical: 7,
-                        marginRight: 2,
-                        marginTop: 2,
-                        marginBottom: 2,
+                        backgroundColor: "gray",
+                        paddingHorizontal: 20,
+                        paddingVertical: 5,
+                        borderRadius: 50,
+                        marginRight: 10,
+                        marginTop: 10,
                       },
                       badgeStyles,
                     ]}
                   >
                     <Text
                       style={[
-                        { color: "gray", fontSize: 13, fontFamily },
+                        { color: "white", fontSize: 12, fontFamily },
                         badgeTextStyles,
                       ]}
                     >
@@ -298,8 +328,6 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
                               temp.splice(existing, 1);
                               return temp;
                             });
-
-                            // onSelect()
                           } else {
                             if (save === "value") {
                               setSelected((val: any) => {
@@ -341,8 +369,8 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
                             <Image
                               key={index}
                               source={require("../assets/images/check.png")}
-                              resizeMode="cover"
-                              style={{ width: 11, height: 11, paddingLeft: 7 }}
+                              resizeMode="contain"
+                              style={{ width: 8, height: 8, paddingLeft: 7 }}
                             />
                           ) : null}
                         </View>
@@ -368,36 +396,62 @@ const MultipleSelectList: React.FC<MultipleSelectListProps> = ({
               )}
             </ScrollView>
 
-            {selectedval?.length > 0 ? (
-              <Pressable
-                style={{
-                  paddingVertical: 6,
-                  borderTopColor: "#e7e7e7",
-                  borderTopWidth: 1,
-                }}
-              >
-                {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingLeft: 20 }}>
-                                        <Text style={{ marginRight: 20, fontWeight: '600', fontFamily }}>Selected</Text>
-                                        <View style={{ height: 1, flex: 1, backgroundColor: 'gray' }} />
-                                    </View>
-                                    <View style={{ flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20, flexWrap: 'wrap' }}>
-
-                                        {
-                                            selectedval?.map((item, index) => {
-                                                return (
-                                                    <View key={index} style={[{ backgroundColor: 'gray', paddingHorizontal: 20, paddingVertical: 5, borderRadius: 50, marginRight: 10, marginTop: 10 }, badgeStyles]}>
-                                                        <Text style={[{ color: 'white', fontSize: 12, fontFamily }, badgeTextStyles]}>{item}</Text>
-                                                    </View>
-                                                )
-                                            })
-                                        }
-                                    </View> */}
-                <TouchableOpacity
-                  style={styles.btnApplyContainer}
-                  onPress={slideup}
+            {selectedval?.length > 0 && showSelected ? (
+              <Pressable>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingLeft: 20,
+                  }}
                 >
-                  <Text style={styles.btnApplyText}>Apply</Text>
-                </TouchableOpacity>
+                  <Text
+                    style={{ marginRight: 20, fontWeight: "600", fontFamily }}
+                  >
+                    {" "}
+                    {selectedLabel}
+                  </Text>
+                  <View
+                    style={{ height: 1, flex: 1, backgroundColor: "gray" }}
+                  />
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    paddingHorizontal: 20,
+                    marginBottom: 20,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {selectedval?.map((item, index) => {
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          {
+                            backgroundColor: "gray",
+                            paddingHorizontal: 20,
+                            paddingVertical: 5,
+                            borderRadius: 50,
+                            marginRight: 10,
+                            marginTop: 10,
+                          },
+                          badgeStyles,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            { color: "white", fontSize: 12, fontFamily },
+                            badgeTextStyles,
+                          ]}
+                        >
+                          {item}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </Pressable>
             ) : null}
           </View>
@@ -420,17 +474,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
   },
-  wrapperSelected: {
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: "gray",
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
   dropdown: {
     borderWidth: 1,
     borderRadius: 10,
@@ -449,20 +492,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "whitesmoke",
-  },
-  btnApplyContainer: {
-    backgroundColor: "#227C56",
-    borderRadius: 32,
-    justifyContent: "center",
-    alignContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-    width: "20%",
-    alignSelf: "flex-end",
-    marginRight: 8,
-  },
-  btnApplyText: {
-    color: "white",
-    padding: 8,
   },
 });

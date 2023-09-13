@@ -47,9 +47,6 @@ export interface SelectListProps {
    */
   data: Array<{}>;
 
-  /**
-   * The default option of the select list
-   */
   defaultOption?: { key: any; value: any };
 
   /**
@@ -159,12 +156,10 @@ export interface MultipleSelectListProps {
    */
   data: Array<{}>;
 
-  selectedData: Array<{}>;
-
   /**
    * The default option of the select list
    */
-  defaultOption?: { key: any; value: any };
+  defaultOption?: { key: any; value: any }[];
 
   /**
    * Pass any JSX to this prop like Text, Image or Icon to show instead of search icon
@@ -255,6 +250,16 @@ export interface MultipleSelectListProps {
    * Additional styles for label
    */
   labelStyles?: TextStyle;
+
+  /**
+   * Dropdown selected section's text
+   */
+  selectedLabel?: string;
+
+  /**
+   * Show/hide selected dropdown selected section
+   */
+  showSelected?: boolean;
 }
 
 declare class MultipleSelectList extends React.Component<MultipleSelectListProps> {}
